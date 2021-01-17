@@ -1,5 +1,5 @@
 {
-  "svelteStrictMode": true,
+  "svelteStrictMode": false,
   "svelteAllowShorthand": true,
   "svelteIndentScriptAndStyle": true
 }
