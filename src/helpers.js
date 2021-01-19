@@ -1,5 +1,14 @@
 import { ROUNDS_PER_GAME } from './constants'
 
+export async function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+export async function loadDetails (celebId) {
+  const res = await fetch(`https://cameo-explorer.netlify.app/celebs/${celebId}.json`)
+  return await res.json()
+}
+
 export function select (celebs, lookup, category) {
   const filtered = celebs.filter((c) => {
     return c.categories.includes(category)
@@ -40,7 +49,7 @@ export function select (celebs, lookup, category) {
   return selection
 }
 
-function pickRandom (array) {
+export function pickRandom (array) {
   const index = Math.floor(array.length * Math.random())
   return array[index]
 }
