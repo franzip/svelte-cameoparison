@@ -1,11 +1,18 @@
 <script>
   import { createEventDispatcher } from "svelte";
+  import { crossfade, fly, scale } from "svelte/transition";
+  import * as eases from "svelte/easing";
   import { loadDetails, sleep, pickRandom } from "../helpers";
   import Card from "../components/Card.svelte";
 
   export let selection;
 
   const dispatch = createEventDispatcher();
+
+  const [send, receive] = crossfade({
+    easing: eases.cubicOut,
+    duration: 300,
+  });
 
   const promises = selection.map((round) =>
     Promise.all([loadDetails(round.a.id), loadDetails(round.b.id)])
@@ -15,6 +22,7 @@
   let i = 0;
   let lastResult;
   let done = false;
+  let ready = true;
 
   $: score = results.filter((x) => x === "right").length;
 
@@ -34,6 +42,8 @@
     results[i] = lastResult;
     lastResult = null;
 
+    await sleep(500);
+
     if (i < selection.length - 1) {
       i += 1;
     } else {
@@ -51,16 +61,30 @@
 
 <div class="game-container">
   {#if done}
-    <div class="done">
+    <div
+      class="done"
+      in:scale={{ delay: 200, duration: 800, easing: eases.elastic }}
+    >
       <strong>{score}/{results.length}</strong>
       <p>{pickMessage(score / results.length)}</p>
       <button on:click={() => dispatch("restart")}>Back to main screen</button>
     </div>
-  {:else}
+  {:else if ready}
     {#await promises[i] then [a, b]}
-      <div class="game">
+      <div
+        class="game"
+        in:fly={{ duration: 200, y: 20 }}
+        out:fly={{ duration: 200, y: -20 }}
+        on:outrostart={() => (ready = false)}
+        on:outroend={() => (ready = true)}
+      >
         <div class="card-container">
-          <Card celeb={a} on:select={() => submit(a, b, 1)} />
+          <Card
+            celeb={a}
+            on:select={() => submit(a, b, 1)}
+            showPrice={!!lastResult}
+            winner={a.price > b.price}
+          />
         </div>
 
         <div>
@@ -70,7 +94,12 @@
         </div>
 
         <div class="card-container">
-          <Card celeb={b} on:select={() => submit(a, b, -1)} />
+          <Card
+            celeb={b}
+            on:select={() => submit(a, b, -1)}
+            showPrice={!!lastResult}
+            winner={b.price > a.price}
+          />
         </div>
       </div>
     {:catch}
@@ -81,6 +110,8 @@
 
 {#if lastResult}
   <img
+    in:fly={{ x: 100, duration: 200 }}
+    out:send={{ key: i }}
     class="giant-result"
     alt="{lastResult} answer"
     src="/icons/{lastResult}.svg"
@@ -91,10 +122,14 @@
   class="results"
   style="grid-template-columns: repeat({results.length}, 1fr)"
 >
-  {#each results as result}
+  {#each results as result, i}
     <span class="result">
       {#if result}
-        <img alt="{result} answer" src="/icons/{result}.svg" />
+        <img
+          in:receive={{ key: i }}
+          alt="{result} answer"
+          src="/icons/{result}.svg"
+        />
       {/if}
     </span>
   {/each}
@@ -155,6 +190,23 @@
     height: 100%;
     left: 0;
     top: 0;
+  }
+
+  .done {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .done strong {
+    font-size: 6em;
+    font-weight: 700;
   }
 
   @media (min-width: 640px) {

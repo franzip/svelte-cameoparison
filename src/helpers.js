@@ -1,12 +1,23 @@
 import { ROUNDS_PER_GAME } from './constants'
 
+export function loadImage (src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = src
+  })
+}
+
 export async function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export async function loadDetails (celebId) {
   const res = await fetch(`https://cameo-explorer.netlify.app/celebs/${celebId}.json`)
-  return await res.json()
+  const details = await res.json()
+  await loadImage(details.image)
+  return details
 }
 
 export function select (celebs, lookup, category) {

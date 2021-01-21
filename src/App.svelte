@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { select } from "./helpers";
+  import { loadImage, select } from "./helpers";
   import Welcome from "./screens/Welcome.svelte";
   import Game from "./screens/Game.svelte";
 
@@ -43,6 +43,8 @@
 
   onMount(async () => {
     celebsPromise = await loadCelebs();
+    loadImage("/icons/right.svg");
+    loadImage("/icons/wrong.svg");
   });
 </script>
 

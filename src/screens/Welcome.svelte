@@ -68,4 +68,25 @@
     left: 0.02em;
     text-indent: -9999px;
   }
+
+  .categories {
+    width: 100%;
+    max-width: 26em;
+    margin: 10px auto;
+  }
+
+  button {
+    padding: 1em;
+    display: block;
+    margin: 0 0 0.2 0;
+    width: 100%;
+  }
+
+  @media (min-width: 640px) {
+    button {
+      display: inline;
+      margin: 0 0.2em 0.4em 0.2em;
+      width: auto;
+    }
+  }
 </style>
